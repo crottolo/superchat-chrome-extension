@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "SuperChat",
+  "version": "1.0.0",
+  "description": "Universal inbox for multi-channel messaging: WhatsApp, Telegram, Instagram, Facebook & Email. Manage all customer conversations in one place.",
+  "minimum_chrome_version": "121",
+
+  "permissions": ["storage", "notifications"],
+
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "public/icons/icon-16.png",
+      "48": "public/icons/icon-48.png",
+      "128": "public/icons/icon-128.png"
+    }
+  },
+
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+
+  "icons": {
+    "16": "public/icons/icon-16.png",
+    "48": "public/icons/icon-48.png",
+    "128": "public/icons/icon-128.png"
+  }
+}

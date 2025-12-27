@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evolution Chat Popover - Clone</title>
+  
+  <!-- Font Awesome per le icone -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  <style>
+    /* ============================================
+       EVOLUTION CHATTER - DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Colors - Primary (WhatsApp Green Theme) */
+      --evo-color-primary: #25D366;
+      --evo-color-primary-dark: #128C7E;
+      --evo-color-primary-light: #DCF8C6;
+      
+      /* Colors - Message Bubbles */
+      --evo-color-bubble-sent: #d9fdd3;
+      --evo-color-bubble-received: #ffffff;
+      
+      /* Colors - Text */
+      --evo-color-text-primary: #111b21;
+      --evo-color-text-secondary: #667781;
+      --evo-color-text-tertiary: #8696a0;
+      
+      /* Colors - Backgrounds */
+      --evo-color-bg-main: #efeae2;
+      --evo-color-bg-chat-list: #ffffff;
+      --evo-color-bg-chat-window: #efeae2;
+      --evo-color-bg-sidebar: #f0f2f5;
+      --evo-color-bg-hover: #f5f6f6;
+      
+      /* Colors - Borders */
+      --evo-color-border: #e9edef;
+      
+      /* Colors - Status */
+      --evo-color-status-read: #53bdeb;
+      
+      /* Colors - Channel Types */
+      --evo-color-whatsapp: #25D366;
+      --evo-color-telegram: #0088cc;
+      
+      /* Colors - Buttons */
+      --evo-color-send-btn: #1bb6ff;
+      --evo-color-send-btn-hover: #1692d2;
+      
+      /* Typography */
+      --evo-font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --evo-font-size-xs: 11px;
+      --evo-font-size-sm: 12px;
+      --evo-font-size-base: 14px;
+      --evo-font-size-lg: 16px;
+      
+      /* Spacing */
+      --evo-spacing-xs: 4px;
+      --evo-spacing-sm: 8px;
+      --evo-spacing-md: 12px;
+      --evo-spacing-base: 16px;
+      --evo-spacing-lg: 20px;
+      
+      /* Border Radius */
+      --evo-radius-sm: 4px;
+      --evo-radius-md: 8px;
+      --evo-radius-lg: 12px;
+      --evo-radius-xl: 16px;
+      
+      /* Shadows */
+      --evo-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+      --evo-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ============================================
+       BASE STYLES
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--evo-font-family);
+      background-color: #f5f5f5;
+      padding: 40px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* ============================================
+       POPOVER WRAPPER
+       ============================================ */
+    .evo-chat-popover-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 500px;
+      height: 600px;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: #efe9e2;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.34);
+      overflow: hidden;
+    }
+
+    /* ============================================
+       CHAT WINDOW CONTAINER
+       ============================================ */
+    .evo-chat-window-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .evo-chat-window-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      align-items: center;
+      height: auto;
+      padding: 6px 10px;
+      background-color: var(--evo-color-bg-chat-list);
+      border-bottom: 1px solid var(--evo-color-border);
+      flex-shrink: 0;
+      row-gap: 4px;
+    }
+
+    .evo-header-contact-info {
+      grid-column: 1;
+      grid-row: 1;
+      overflow: hidden;
+    }
+
+    .evo-contact-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .evo-contact-name {
+      font-size: var(--evo-font-size-lg);
+      font-weight: 500;
+      color: var(--evo-color-text-primary);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .evo-contact-number {
+      font-size: var(--evo-font-size-sm);
+      font-weight: 400;
+      color: var(--evo-color-text-secondary);
+    }
+
+    .evo-contact-status.evo-status-online {
+      font-size: var(--evo-font-size-sm);
+      color: var(--evo-color-whatsapp);
+    }
+
+    /* Header Actions */
+    .evo-header-actions {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: var(--evo-spacing-sm);
+    }
+
+    .evo-btn-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      border-radius: var(--evo-radius-md);
+      color: var(--evo-color-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .evo-btn-icon:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--evo-color-text-primary);
+    }
+
+    .evo-btn-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Channel Wrapper (seconda riga header) */
+    .evo-header-channel-wrapper {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 4px;
+      margin: 0 -10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .evo-header-instance-badge {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--evo-radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      background-color: #e8f4fd;
+      color: #1976d2;
+      border: 1px solid rgba(25, 118, 210, 0.2);
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .evo-header-instance-badge i {
+      font-size: 11px;
+      color: #1976d2;
+    }
+
+    .evo-header-channel-badge {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: var(--evo-spacing-xs) var(--evo-spacing-md);
+      border-radius: var(--evo-radius-xl);
+      color: white;
+    }
+
+    .evo-header-channel-badge.evo-channel-whatsapp {
+      background-color: var(--evo-color-whatsapp);
+    }
+
+    .evo-header-channel-badge.evo-channel-telegram {
+      background-color: var(--evo-color-telegram);
+    }
+
+    .evo-header-channel-badge .evo-channel-name {
+      font-size: var(--evo-font-size-sm);
+      font-weight: 500;
+    }
+
+    /* WhatsApp Icon SVG */
+    .whatsapp-icon {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* ============================================
+       MESSAGES AREA
+       ============================================ */
+    .evo-chat-messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--evo-spacing-md);
+      background-color: var(--evo-color-bg-chat-window);
+    }
+
+    /* Custom Scrollbar */
+    .evo-chat-messages-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .evo-chat-messages-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .evo-chat-messages-area::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+
+    .evo-chat-messages-area::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Date Separator */
+    .evo-date-separator {
+      text-align: center;
+      margin: var(--evo-spacing-lg) 0 var(--evo-spacing-base);
+    }
+
+    .evo-date-separator span {
+      display: inline-block;
+      padding: 6px var(--evo-spacing-md);
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: var(--evo-radius-md);
+      font-size: var(--evo-font-size-xs);
+      font-weight: 500;
+      color: var(--evo-color-text-secondary);
+      box-shadow: var(--evo-shadow-sm);
+    }
+
+    /* Message Wrapper */
+    .evo-message-wrapper {
+      display: flex;
+      margin-bottom: var(--evo-spacing-sm);
+      position: relative;
+    }
+
+    .evo-message-wrapper.evo-sent {
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+
+    .evo-message-wrapper.evo-received {
+      justify-content: flex-start;
+    }
+
+    /* Message Bubble */
+    .evo-message-bubble {
+      display: flex;
+      flex-direction: column;
+      max-width: 65%;
+      padding: var(--evo-spacing-sm) var(--evo-spacing-md);
+      border-radius: var(--evo-radius-md);
+      position: relative;
+      word-wrap: break-word;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+
+    .evo-sent .evo-message-bubble {
+      background-color: var(--evo-color-bubble-sent);
+      border-bottom-right-radius: var(--evo-radius-sm);
+    }
+
+    .evo-sent .evo-message-bubble::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: -6px;
+      width: 12px;
+      height: 12px;
+      background-color: var(--evo-color-bubble-sent);
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+    }
+
+    .evo-received .evo-message-bubble {
+      background-color: var(--evo-color-bubble-received);
+      border-top-left-radius: var(--evo-radius-sm);
+    }
+
+    .evo-received .evo-message-bubble::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -6px;
+      width: 12px;
+      height: 12px;
+      background-color: var(--evo-color-bubble-received);
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+
+    .evo-message-text {
+      margin: 0 0 var(--evo-spacing-xs) 0;
+      font-size: var(--evo-font-size-base);
+      line-height: 1.4;
+      white-space: pre-wrap;
+      color: var(--evo-color-text-primary);
+    }
+
+    .evo-message-footer {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: var(--evo-spacing-xs);
+      align-items: center;
+    }
+
+    .evo-message-time {
+      font-size: var(--evo-font-size-xs);
+      font-weight: 400;
+      color: var(--evo-color-text-secondary);
+    }
+
+    /* Status Icons */
+    .evo-status-icon {
+      display: inline-flex;
+      margin-left: 4px;
+    }
+
+    .evo-status-icon i {
+      font-size: 12px;
+    }
+
+    .evo-status-icon i + i {
+      margin-left: -5px;
+    }
+
+    .evo-status-sent i {
+      color: var(--evo-color-text-secondary);
+    }
+
+    .evo-status-delivered i {
+      color: var(--evo-color-text-secondary);
+    }
+
+    .evo-status-read i {
+      color: var(--evo-color-status-read);
+    }
+
+    /* Avatar */
+    .evo-message-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-left: var(--evo-spacing-sm);
+      flex-shrink: 0;
+      background-color: var(--evo-color-primary);
+    }
+
+    .evo-avatar-initials {
+      font-size: var(--evo-font-size-sm);
+      font-weight: 600;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    /* Reactions Bar */
+    .evo-reactions-bar {
+      position: absolute;
+      bottom: -10px;
+      display: flex;
+      gap: 2px;
+      padding: 2px 6px;
+      background-color: white;
+      border-radius: var(--evo-radius-xl);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      z-index: 1;
+    }
+
+    .evo-sent .evo-reactions-bar {
+      right: 8px;
+    }
+
+    .evo-received .evo-reactions-bar {
+      left: 8px;
+    }
+
+    .evo-reaction-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 1px;
+      cursor: default;
+    }
+
+    .evo-reaction-emoji {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .evo-reaction-count {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--evo-color-text-secondary);
+    }
+
+    /* Extra margin for messages with reactions */
+    .evo-message-wrapper.has-reactions {
+      margin-bottom: var(--evo-spacing-md);
+    }
+
+    /* System Message */
+    .evo-system-message {
+      display: flex;
+      justify-content: center;
+      padding: var(--evo-spacing-sm) 0;
+    }
+
+    .evo-system-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--evo-spacing-xs);
+      padding: 6px var(--evo-spacing-md);
+      background-color: #fff;
+      border-radius: var(--evo-radius-xl);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      font-size: var(--evo-font-size-xs);
+      font-weight: 400;
+      color: var(--evo-color-text-tertiary);
+    }
+
+    .evo-system-badge i {
+      font-size: 12px;
+      color: var(--evo-color-text-secondary);
+    }
+
+    .evo-system-time {
+      margin-left: var(--evo-spacing-xs);
+      padding-left: var(--evo-spacing-xs);
+      border-left: 1px solid rgba(0, 0, 0, 0.1);
+      color: var(--evo-color-text-secondary);
+    }
+
+    /* ============================================
+       INPUT AREA
+       ============================================ */
+    .evo-input-area {
+      flex-shrink: 0;
+      padding: var(--evo-spacing-sm) var(--evo-spacing-base);
+      border-top: 1px solid var(--evo-color-border);
+      background-color: var(--evo-color-bg-chat-list);
+    }
+
+    .evo-input-area-wrapper {
+      position: relative;
+    }
+
+    .evo-input-container {
+      background-color: #f0f2f5;
+      border: 1px solid rgb(199, 199, 199);
+      border-radius: var(--evo-radius-lg);
+      overflow: hidden;
+    }
+
+    .evo-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .evo-message-input-wrapper {
+      padding: var(--evo-spacing-sm) var(--evo-spacing-md) 0;
+    }
+
+    .evo-message-input {
+      width: 100%;
+      min-height: 32px;
+      max-height: 120px;
+      resize: none;
+      background: transparent;
+      border: none;
+      padding: 6px 0;
+      font-size: var(--evo-font-size-base);
+      font-family: var(--evo-font-family);
+      line-height: 1.4;
+      overflow-y: auto;
+      color: var(--evo-color-text-primary);
+    }
+
+    .evo-message-input:focus {
+      outline: none;
+    }
+
+    .evo-message-input::placeholder {
+      color: var(--evo-color-text-tertiary);
+    }
+
+    .evo-input-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--evo-spacing-xs) var(--evo-spacing-sm);
+    }
+
+    .evo-actions-left {
+      display: flex;
+      flex-direction: row;
+      gap: var(--evo-spacing-xs);
+    }
+
+    .evo-input-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      border-radius: var(--evo-radius-md);
+      color: var(--evo-color-text-tertiary);
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.15s ease;
+    }
+
+    .evo-input-btn:hover:not(:disabled) {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--evo-color-text-secondary);
+    }
+
+    .evo-input-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .evo-send-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: none;
+      background-color: var(--evo-color-send-btn);
+      border-radius: 50%;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .evo-send-btn:hover:not(:disabled) {
+      background-color: var(--evo-color-send-btn-hover);
+      transform: scale(1.05);
+    }
+
+    .evo-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ============================================
+       REPLY PREVIEW
+       ============================================ */
+    .evo-reply-preview {
+      display: flex;
+      margin-bottom: var(--evo-spacing-xs);
+      padding: var(--evo-spacing-xs) var(--evo-spacing-sm);
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: var(--evo-radius-sm);
+      font-size: var(--evo-font-size-xs);
+    }
+
+    .evo-reply-bar {
+      width: 3px;
+      background-color: var(--evo-color-primary);
+      border-radius: 2px;
+      margin-right: var(--evo-spacing-sm);
+    }
+
+    .evo-reply-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .evo-reply-sender {
+      font-weight: 600;
+      color: var(--evo-color-primary);
+    }
+
+    .evo-reply-text {
+      color: var(--evo-color-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================
+       IMAGE MESSAGE
+       ============================================ */
+    .evo-message-image-fallback {
+      position: relative;
+      cursor: pointer;
+      border-radius: var(--evo-radius-sm);
+      overflow: hidden;
+      margin-bottom: var(--evo-spacing-xs);
+    }
+
+    .evo-message-image-fallback img {
+      display: block;
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: var(--evo-radius-sm);
+    }
+
+    .evo-image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .evo-image-overlay i {
+      color: white;
+      font-size: 24px;
+    }
+
+    .evo-message-image-fallback:hover .evo-image-overlay {
+      opacity: 1;
+    }
+
+    .evo-message-caption {
+      margin: 0;
+      font-size: var(--evo-font-size-sm);
+      line-height: 1.4;
+    }
+
+    /* ============================================
+       DOCUMENT MESSAGE
+       ============================================ */
+    .evo-message-document-fallback {
+      display: flex;
+      align-items: center;
+      gap: var(--evo-spacing-sm);
+      padding: var(--evo-spacing-sm);
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: var(--evo-radius-sm);
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: var(--evo-spacing-xs);
+    }
+
+    .evo-message-document-fallback:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .evo-document-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--evo-color-primary);
+      border-radius: var(--evo-radius-sm);
+      color: white;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .evo-document-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .evo-document-name {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .evo-document-type {
+      font-size: var(--evo-font-size-xs);
+      color: var(--evo-color-text-secondary);
+    }
+
+    .evo-document-download {
+      color: var(--evo-color-primary);
+      flex-shrink: 0;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+      .evo-chat-popover-wrapper {
+        max-width: 95vw !important;
+        max-height: 85vh !important;
+      }
+
+      .evo-message-bubble {
+        max-width: 80%;
+      }
+
+      body {
+        padding: 10px;
+      }
+    }
+
+    /* ============================================
+       ANIMATION
+       ============================================ */
+    @keyframes evoMessageSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .evo-message-wrapper {
+      animation: evoMessageSlideIn 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="evo-chat-popover-wrapper">
+    <div class="evo-chat-window-container">
+      
+      <!-- ========== HEADER ========== -->
+      <div class="evo-chat-window-header">
+        <!-- Left: Contact Info -->
+        <div class="evo-header-contact-info">
+          <div class="evo-contact-details">
+            <h4 class="evo-contact-name">Crotti Roberto</h4>
+            <span class="evo-contact-number">+3903505169</span>
+            <!-- Oppure se online: -->
+            <!-- <span class="evo-contact-status evo-status-online">Online</span> -->
+          </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="evo-header-actions">
+          <!-- Reassign -->
+          <button class="evo-btn-icon" title="Reassign Conversation">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 8v6M17 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Update Contact -->
+          <button class="evo-btn-icon" title="Update Contact Display Name">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 21v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Close Popover -->
+          <button class="evo-btn-icon" title="Close">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Channel Badges (seconda riga) -->
+        <div class="evo-header-channel-wrapper">
+          <!-- Instance Badge -->
+          <span class="evo-header-instance-badge">
+            <i class="fa fa-server"></i>
+            <span>Energia DEV</span>
+          </span>
+          <!-- WhatsApp Channel Badge -->
+          <span class="evo-header-channel-badge evo-channel-whatsapp">
+            <svg class="whatsapp-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+            <span class="evo-channel-name">+393935873723</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- ========== MESSAGES AREA ========== -->
+      <div class="evo-chat-messages-area">
+        
+        <!-- Date Separator -->
+        <div class="evo-date-separator">
+          <span>2 Novembre 2025</span>
+        </div>
+
+        <!-- System Message -->
+        <div class="evo-system-message">
+          <div class="evo-system-badge">
+            <i class="fa fa-user-plus"></i>
+            <span>Conversazione assegnata a Admin</span>
+            <span class="evo-system-time">09:15</span>
+          </div>
+        </div>
+
+        <!-- Received Message -->
+        <div class="evo-message-wrapper evo-received">
+          <div class="evo-message-bubble">
+            <p class="evo-message-text">Buongiorno, vorrei informazioni sul contratto HERA. Come posso procedere?</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">09:30</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sent Message with Avatar -->
+        <div class="evo-message-wrapper evo-sent">
+          <div class="evo-message-bubble">
+            <p class="evo-message-text">Buongiorno! Certo, le invio subito le informazioni. Ha già compilato il modulo online?</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">09:32</span>
+              <span class="evo-status-icon evo-status-read">
+                <i class="fa fa-check"></i><i class="fa fa-check"></i>
+              </span>
+            </div>
+          </div>
+          <div class="evo-message-avatar" style="background-color: #7c3aed;">
+            <span class="evo-avatar-initials">RC</span>
+          </div>
+        </div>
+
+        <!-- Received Message with Reply Preview -->
+        <div class="evo-message-wrapper evo-received">
+          <div class="evo-message-bubble">
+            <div class="evo-reply-preview">
+              <div class="evo-reply-bar"></div>
+              <div class="evo-reply-content">
+                <span class="evo-reply-sender">Crotti Roberto</span>
+                <span class="evo-reply-text">Buongiorno! Certo, le invio subito le informazioni...</span>
+              </div>
+            </div>
+            <p class="evo-message-text">Sì, ho già compilato tutto online ieri sera.</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">09:35</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Received Message with Reactions -->
+        <div class="evo-message-wrapper evo-received has-reactions">
+          <div class="evo-message-bubble">
+            <p class="evo-message-text">Ecco il codice fiscale richiesto: CRTXXX80A01H501Z</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">09:40</span>
+            </div>
+            <div class="evo-reactions-bar">
+              <span class="evo-reaction-badge">
+                <span class="evo-reaction-emoji">👍</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sent Message - Long text -->
+        <div class="evo-message-wrapper evo-sent">
+          <div class="evo-message-bubble">
+            <p class="evo-message-text">Abbiamo completato la registrazione del contratto con HERA. Riceverà due email in tempo reale da parte di HERA:
+
+1️⃣ Una con la copia del contratto firmato digitalmente
+2️⃣ Una con il riepilogo delle condizioni economiche applicate
+
+Per qualsiasi domanda, sono a disposizione!</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">10:15</span>
+              <span class="evo-status-icon evo-status-delivered">
+                <i class="fa fa-check"></i><i class="fa fa-check"></i>
+              </span>
+            </div>
+          </div>
+          <div class="evo-message-avatar" style="background-color: #7c3aed;">
+            <span class="evo-avatar-initials">RC</span>
+          </div>
+        </div>
+
+        <!-- Received Image Message -->
+        <div class="evo-message-wrapper evo-received">
+          <div class="evo-message-bubble">
+            <div class="evo-message-image-fallback">
+              <img src="https://via.placeholder.com/300x200/e8f4fd/1976d2?text=Documento+Allegato" alt="Image">
+              <div class="evo-image-overlay">
+                <i class="fa fa-search-plus"></i>
+              </div>
+            </div>
+            <p class="evo-message-caption">Ecco la bolletta precedente come richiesto</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">10:20</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sent Document Message -->
+        <div class="evo-message-wrapper evo-sent">
+          <div class="evo-message-bubble">
+            <div class="evo-message-document-fallback">
+              <div class="evo-document-icon">
+                <i class="fa fa-file-pdf-o"></i>
+              </div>
+              <div class="evo-document-info">
+                <span class="evo-document-name">Contratto_HERA_2025.pdf</span>
+                <span class="evo-document-type">PDF Document • 245 KB</span>
+              </div>
+              <div class="evo-document-download">
+                <i class="fa fa-download"></i>
+              </div>
+            </div>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">10:25</span>
+              <span class="evo-status-icon evo-status-sent">
+                <i class="fa fa-check"></i>
+              </span>
+            </div>
+          </div>
+          <div class="evo-message-avatar" style="background-color: #7c3aed;">
+            <span class="evo-avatar-initials">RC</span>
+          </div>
+        </div>
+
+        <!-- Final Received Message -->
+        <div class="evo-message-wrapper evo-received has-reactions">
+          <div class="evo-message-bubble">
+            <p class="evo-message-text">Perfetto, grazie mille per l'assistenza! 🙏</p>
+            <div class="evo-message-footer">
+              <span class="evo-message-time">10:30</span>
+            </div>
+            <div class="evo-reactions-bar">
+              <span class="evo-reaction-badge">
+                <span class="evo-reaction-emoji">❤️</span>
+              </span>
+              <span class="evo-reaction-badge">
+                <span class="evo-reaction-emoji">👏</span>
+                <span class="evo-reaction-count">2</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========== INPUT AREA ========== -->
+      <div class="evo-input-area">
+        <div class="evo-input-area-wrapper">
+          <div class="evo-input-container">
+            <div class="evo-input-wrapper">
+              <div class="evo-message-input-wrapper">
+                <textarea 
+                  class="evo-message-input" 
+                  placeholder="Type a message..." 
+                  rows="1"></textarea>
+              </div>
+              <div class="evo-input-actions">
+                <div class="evo-actions-left">
+                  <!-- Emoji Button -->
+                  <button class="evo-input-btn" title="Emoji">
+                    <i class="fa fa-smile-o"></i>
+                  </button>
+                  <!-- Attachment Button -->
+                  <button class="evo-input-btn" title="Attach file">
+                    <i class="fa fa-paperclip"></i>
+                  </button>
+                  <!-- Audio Button -->
+                  <button class="evo-input-btn" title="Audio (coming soon)" disabled>
+                    <i class="fa fa-microphone"></i>
+                  </button>
+                </div>
+                <!-- Send Button -->
+                <button class="evo-send-btn" title="Send message">
+                  <i class="fa fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Auto-resize textarea
+    const textarea = document.querySelector('.evo-message-input');
+    textarea.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Scroll to bottom on load
+    const messagesArea = document.querySelector('.evo-chat-messages-area');
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+
+    // Close button handler
+    document.querySelector('.evo-btn-icon[title="Close"]').addEventListener('click', function() {
+      alert('Popover chiuso!');
+    });
+
+    // Send button handler
+    document.querySelector('.evo-send-btn').addEventListener('click', function() {
+      const message = textarea.value.trim();
+      if (message) {
+        console.log('Messaggio inviato:', message);
+        textarea.value = '';
+        textarea.style.height = 'auto';
+      }
+    });
+
+    // Enter to send (Shift+Enter for new line)
+    textarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.querySelector('.evo-send-btn').click();
+      }
+    });
+  </script>
+
+</body>
+</html>
