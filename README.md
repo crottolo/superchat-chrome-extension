@@ -4,6 +4,36 @@
 
 Universal inbox Chrome extension for managing customer conversations across multiple messaging channels: WhatsApp, Telegram, Instagram, Facebook & Email.
 
+## Screenshots
+
+### Light Theme
+
+#### Assigned Chats
+
+![Assigned Tab - Light](docs/screenshots/assigned-light.png)
+
+#### Assigned with Chat Open
+
+![Assigned with Chat - Light](docs/screenshots/assigned-chat-light.png)
+
+#### Unassigned Chats
+
+![Unassigned Tab - Light](docs/screenshots/unassigned-light.png)
+
+#### Settings
+
+![Settings Tab - Light](docs/screenshots/settings-light.png)
+
+### Dark Theme
+
+#### Assigned with Chat Open
+
+![Assigned with Chat - Dark](docs/screenshots/assigned-chat-dark.png)
+
+#### Unassigned Chats
+
+![Unassigned Tab - Dark](docs/screenshots/unassigned-dark.png)
+
 ## Features
 
 - **Multi-channel support**: WhatsApp, Telegram, Instagram, Facebook, Email
